@@ -45,11 +45,43 @@ MongoClient.connect('mongodb://localhost/snippets', function(err, db) {
   };
 
   var update = function(name, content) {
-    db.close();
+    var query = {
+      name: name
+    };
+    
+    var update = {
+      $set: {content: content}
+    };
+    
+    collection.findAndModify(query, null, update, function(err, result){
+      var snippet = result.value;
+      if (!snippet || err) {
+        console.error("Could Not Update Snippet", name);
+        db.close();
+        return;
+      }
+      console.log("Updated Snippet", snippet.name);
+      db.close();
+    });
+    
   };
 
-  var del = function(name, content) {
-    db.close();
+  var del = function(name) {
+    var query = {
+      name: name
+    };
+    
+    collection.findAndRemove(query, function(err, result) {
+      var snippet = result.value;
+      if (!snippet || err) {
+        console.error("Could not delete snippet", name);
+        db.close();
+        return;
+      }
+      console.log("Snippet Deleted", snippet.name);
+      db.close();
+    });
+    
   };
 
   var main = function() {
